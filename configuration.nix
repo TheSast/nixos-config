@@ -3,17 +3,7 @@
   pkgs,
   lib,
   ...
-}: let
-  unstablepkgs =
-    import
-    (builtins.fetchTarball {
-      name = "nixos-unstable-2023-08-30";
-      url = "https://github.com/nixos/nixpkgs/archive/3efb0f6f404ec8dae31bdb1a9b17705ce0d6986e.tar.gz";
-      sha256 = "0a5vjzlbkgxv80r4cba3gdmdbd7vccg11kbsn71bjkfc0pkajyyb";
-    })
-    {config = config.nixpkgs.config;};
-  # pkgs;
-in {
+}: {
   imports = [
     ./hardware-configuration.nix
   ];
@@ -62,6 +52,7 @@ in {
       turbo = "auto";
     };
   };
+  # TODO: set each key
   systemd.sleep.extraConfig = ''
     HibernateDelaySec=10m
     HibernateMode=shutdown
@@ -108,25 +99,15 @@ in {
   };
 
   # services.upower.ignoreLid = true;
-  services.logind.extraConfig = ''
-    HandlePowerKey=ignore
-    HandlePowerKeyLongPress=ignore
-    HandleRebootKey=ignore
-    HandleRebootKeyLongPress=ignore
-    HandleSuspendKey=ignore
-    HandleSuspendKeyLongPress=ignore
-    HandleHibernateKey=ignore
-    HandleHibernateKeyLongPress=ignore
-  '';
   services.logind = {
     lidSwitch = "ignore";
-    # powerKey = "ignore";
-    # rebootKey = "ignore";
-    # rebootKeyLongPress = "ignore";
-    # suspendKey = "ignore";
-    # suspendKeyLongPress = "ignore";
-    # hibernateKey = "ignore";
-    # hibernateKeyLongPress = "ignore";
+    powerKey = "ignore";
+    rebootKey = "ignore";
+    rebootKeyLongPress = "ignore";
+    suspendKey = "ignore";
+    suspendKeyLongPress = "ignore";
+    hibernateKey = "ignore";
+    hibernateKeyLongPress = "ignore";
   };
 
   services.gpm.enable = true;
@@ -166,11 +147,6 @@ in {
         enable = true;
         wayland = true;
       };
-      # sddm = {
-      #   enable = false;
-      #   theme = "breeze";
-      #   # wayland.enable = true;
-      # };
     };
     # nixpkgs sddm uses a setup command hard-coding tty7 as the initial tty
     # forcing it flickers and moves it to tty1 (the right one), should be left to null when using sddm for it to work dynamically
@@ -189,11 +165,6 @@ in {
 
   programs.hyprland = {
     enable = true;
-    xwayland = {
-      enable = true; # false soon?
-      # hidpi = true;
-    };
-    package = unstablepkgs.hyprland; # remove in 23.11!
   };
   # programs.xwayland.enable = config.programs.hyprland.xwayland.enable.true; # unneded ?
 
@@ -210,7 +181,7 @@ in {
     ];
   };
 
-  fonts.fonts = with pkgs; [
+  fonts.packages = with pkgs; [
     nerdfonts
   ];
 
@@ -253,14 +224,6 @@ in {
       isNormalUser = true;
       extraGroups = ["networkmanager" "wheel" "code"];
       shell = pkgs.fish;
-    };
-    p = {
-      isSystemUser = true;
-      group = "users";
-      createHome = true;
-      home = "/home/p";
-      useDefaultShell = true;
-      homeMode = "710";
     };
     s = {
       isSystemUser = true;
